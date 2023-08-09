@@ -16,22 +16,33 @@ app.get('/', (request, response) => {
 
 app.get('/:room', (request, response) => {
 
-    response.render('roomTemplate', { roomId: request.params.room });
+    // object sends data for room.ejs (template) to display
+    response.render('roomTemplate', { room: request.params.room });
 
 })
-// object sends data for room.ejs (template) to display
 
 io.on('connection', socket => {
-    const clientIP = socket.request.connection.remoteAddress;
-    console.log('Client IP:', clientIP);
+    // const clientIP = socket.request.connection.remoteAddress;
+    // console.log('Client IP:', clientIP);
 
 
-    socket.on('join-room', (room, user) => {
-        // console.log(room, user);
+    socket.on('join-room', (room, peer) => {
+        // console.log(room, peer);
 
         socket.join(room);
-        socket.emit('user-connected', clientIP)
+        // socket.emit('user-connected', peer)
+        socket.to(room).emit('user-connected', peer)
+        console.log(peer + ' has joined the call.')
+
+        socket.on('disconnect', () => {
+            socket.to(room).emit('user-disconnected', peer)
+        })
+
     })
+
+    // socket.on('confirmation', peer => {
+    //     console.log(peer + ' has joined the call.')
+    // })
 
 })
 
