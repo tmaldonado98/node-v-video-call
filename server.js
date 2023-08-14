@@ -16,23 +16,39 @@ app.get('/', (request, response) => {
 
 app.get('/:room', (request, response) => {
 
-    response.render('roomTemplate', { roomId: request.params.room });
+    // object sends data for room.ejs (template) to display
+    response.render('roomTemplate', { room: request.params.room });
 
 })
-// object sends data for room.ejs (template) to display
 
 io.on('connection', socket => {
-    const clientIP = socket.request.connection.remoteAddress;
-    console.log('Client IP:', clientIP);
+    // const uuid = uuidV4();
+    // socket.id = uuid;
+    // console.log(socket.id)
 
+    // Check if the sockets connected object is defined
 
-    socket.on('join-room', (room, user) => {
-        // console.log(room, user);
+    socket.on('join-room', (room, peer) => {
+        // console.log(room, peer);
 
         socket.join(room);
-        socket.emit('user-connected', clientIP)
+        // socket.emit('user-connected', peer)
+
+        socket.to(room).emit('user-connected', peer)
+        console.log(peer + ' has joined the call.')
+
+        socket.on('disconnect', () => {
+            console.log(peer + ' has left the room.')
+            socket.to(room).emit('user-disconnected', peer)
+        })
     })
 
+    // socket.on('confirmation', peer => {
+    //     console.log(peer + ' has joined the call.')
+    // })
+
 })
+
+// need to listen to when a peer joins, to send stream back to peer.
 
 server.listen(3000)
